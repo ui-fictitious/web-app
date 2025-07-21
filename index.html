@@ -123,14 +123,22 @@
     <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot, query, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Configuration ---
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : { apiKey: "your-fallback-api-key", authDomain: "your-fallback-auth-domain", projectId: "your-fallback-project-id" };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-newsletter-app';
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDvwNsKNsVCHDgTStEvzrkTE8QWP831rPU",
+            authDomain: "webapp-6ac16.firebaseapp.com",
+            projectId: "webapp-6ac16",
+            storageBucket: "webapp-6ac16.appspot.com",
+            messagingSenderId: "357496327597",
+            appId: "1:357496327597:web:e95110ee68f4f9b1a7a524",
+            measurementId: "G-J691GR2M4G"
+        };
+        const appId = 'webapp-6ac16'; // Using your project ID as the app identifier
 
         // --- App State ---
         let db, auth;
@@ -341,7 +349,9 @@
 
         // --- Initialization ---
         async function main() {
+            // Initialize Firebase
             const app = initializeApp(firebaseConfig);
+            const analytics = getAnalytics(app);
             auth = getAuth(app);
             db = getFirestore(app);
 
@@ -352,15 +362,12 @@
                     loadingIndicator.classList.add('hidden');
                     setupFirestoreListeners();
                 } else {
+                    // For local development or environments without a specific token,
+                    // sign in anonymously to get a UID.
                     try {
-                        const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                        if (authToken) {
-                            await signInWithCustomToken(auth, authToken);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
+                       await signInAnonymously(auth);
                     } catch (error) {
-                        console.error("Authentication failed:", error);
+                        console.error("Anonymous authentication failed:", error);
                         loadingIndicator.innerHTML = '<p class="text-lg font-medium text-red-600">Authentication Failed. Please refresh.</p>';
                     }
                 }
