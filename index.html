@@ -31,7 +31,7 @@
     </div>
 
     <!-- App Container -->
-    <div id="app-container" class="relative min-h-screen md:flex">
+    <div id="app-container" class="relative min-h-screen md:flex" style="display: none;">
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" style="display: none;"></div>
         <div id="sidebar" class="bg-gray-800 text-white w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30">
             <div class="flex items-center space-x-3 p-2 mb-6">
@@ -53,8 +53,10 @@
                 </button>
             </nav>
             <div class="border-t border-gray-700 pt-4">
-                 <p id="user-info" class="text-sm text-gray-300 px-3 pb-2 break-all"></p>
-                 <button id="sign-out-btn" class="w-full text-left p-3 text-sm text-red-400 hover:bg-gray-700 rounded-lg">Sign Out</button>
+                 <p id="user-info" class="text-sm text-gray-300 px-3 pb-2 font-semibold"></p>
+                 <p class="text-xs text-gray-400 px-3 pb-1">Your User ID:</p>
+                 <p id="user-id-display" class="text-xs text-gray-300 px-3 pb-2 break-all select-all"></p>
+                 <button id="sign-out-btn" class="w-full text-left mt-2 p-3 text-sm text-red-400 hover:bg-gray-700 rounded-lg">Sign Out</button>
             </div>
         </div>
 
@@ -120,6 +122,7 @@
         const githubSigninBtn = document.getElementById('github-signin-btn');
         const signOutBtn = document.getElementById('sign-out-btn');
         const userInfoDisplay = document.getElementById('user-info');
+        const userIdDisplay = document.getElementById('user-id-display');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
         const mobileMenuButton = document.getElementById('mobile-menu-button');
@@ -207,9 +210,16 @@
 
         function renderNewsletters() {
             const newsletterList = localNewsletters.map(nl => `
-                <div class="border-b pb-3">
-                    <h3 class="font-semibold text-gray-800">${nl.subject}</h3>
-                    <p class="text-sm text-gray-500 mt-1 truncate">${nl.content}</p>
+                <div class="border-b pb-4 mb-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">${nl.subject}</h3>
+                            <p class="text-sm text-gray-500 mt-1">${nl.content}</p>
+                        </div>
+                        <button data-id="${nl.id}" data-subject="${nl.subject}" class="delete-newsletter-btn text-gray-400 hover:text-red-600 p-1 ml-2 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
                     <p class="text-xs text-gray-400 mt-2">Sent on: ${nl.sentAt ? new Date(nl.sentAt.seconds * 1000).toLocaleString() : 'N/A'}</p>
                 </div>`).join('');
 
@@ -328,10 +338,12 @@
             });
 
             document.body.addEventListener('click', (e) => {
-                const deleteButton = e.target.closest('.delete-subscriber-btn');
-                if (deleteButton) {
-                    const subId = deleteButton.dataset.id;
-                    const subEmail = deleteButton.dataset.email;
+                const deleteSubBtn = e.target.closest('.delete-subscriber-btn');
+                const deleteNlBtn = e.target.closest('.delete-newsletter-btn');
+
+                if (deleteSubBtn) {
+                    const subId = deleteSubBtn.dataset.id;
+                    const subEmail = deleteSubBtn.dataset.email;
                     showModal({
                         title: "Confirm Deletion",
                         message: `Delete subscriber "${subEmail}"? This cannot be undone.`,
@@ -343,6 +355,23 @@
                             } catch (error) {
                                 hideModal();
                                 showModal({ title: "Error", message: "Failed to delete subscriber." });
+                            }
+                        }
+                    });
+                } else if (deleteNlBtn) {
+                    const nlId = deleteNlBtn.dataset.id;
+                    const nlSubject = deleteNlBtn.dataset.subject;
+                    showModal({
+                        title: "Confirm Deletion",
+                        message: `Delete newsletter "${nlSubject}"? This cannot be undone.`,
+                        showConfirm: true,
+                        onConfirm: async () => {
+                            try {
+                                await deleteDoc(doc(db, `${basePath}/newsletters`, nlId));
+                                hideModal();
+                            } catch (error) {
+                                hideModal();
+                                showModal({ title: "Error", message: "Failed to delete newsletter." });
                             }
                         }
                     });
@@ -372,11 +401,13 @@
                     loginContainer.style.display = 'none';
                     appContainer.style.display = 'flex';
                     userInfoDisplay.textContent = user.displayName || user.email;
+                    userIdDisplay.textContent = user.uid;
                     setupFirestoreListeners(user.uid);
                 } else {
                     appContainer.style.display = 'none';
                     loginContainer.style.display = 'flex';
                     userInfoDisplay.textContent = '';
+                    userIdDisplay.textContent = '';
                     clearFirestoreListeners();
                 }
             });
