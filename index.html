@@ -13,12 +13,13 @@
         .view { display: none; }
         .view.active { display: block; }
         #app-container, #login-container { display: none; }
+        #sidebar { transition: transform 0.3s ease-in-out; }
     </style>
 </head>
 <body class="h-full">
 
     <!-- Login Container -->
-    <div id="login-container" class="flex h-screen w-full items-center justify-center bg-gray-100">
+    <div id="login-container" class="flex h-screen w-full items-center justify-center bg-gray-100 p-4">
         <div class="bg-white p-8 rounded-lg shadow-md text-center w-full max-w-sm">
             <h1 class="text-2xl font-bold mb-2">Newsletter HQ</h1>
             <p class="text-gray-600 mb-6">Please sign in to continue.</p>
@@ -30,9 +31,9 @@
     </div>
 
     <!-- App Container -->
-    <div id="app-container" class="flex h-screen bg-gray-100 font-sans">
-        <!-- Sidebar -->
-        <div class="w-64 bg-gray-800 text-white flex flex-col p-4 space-y-2">
+    <div id="app-container" class="relative min-h-screen md:flex">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" style="display: none;"></div>
+        <div id="sidebar" class="bg-gray-800 text-white w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30">
             <div class="flex items-center space-x-3 p-2 mb-6">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                 <span class="text-xl font-bold">Newsletter HQ</span>
@@ -57,19 +58,24 @@
             </div>
         </div>
 
-        <!-- Main Content -->
-        <main class="flex-1 p-8 overflow-y-auto">
-            <!-- Dashboard View -->
-            <div id="view-dashboard" class="view active"></div>
-            <!-- Subscribers View -->
-            <div id="view-subscribers" class="view"></div>
-            <!-- Newsletters View -->
-            <div id="view-newsletters" class="view"></div>
-        </main>
+        <div class="flex-1 flex flex-col">
+            <div class="md:hidden flex justify-between items-center bg-white p-4 shadow-md">
+                <button id="mobile-menu-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <span class="text-xl font-bold">Newsletter HQ</span>
+            </div>
+            <main class="flex-1 p-4 sm:p-8 overflow-y-auto">
+                <div id="view-dashboard" class="view active"></div>
+                <div id="view-subscribers" class="view"></div>
+                <div id="view-newsletters" class="view"></div>
+            </main>
+        </div>
     </div>
 
-    <!-- Modal -->
-    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
         <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md m-4">
             <div class="flex justify-between items-center mb-4">
                 <h3 id="modal-title" class="text-xl font-bold text-gray-800 flex items-center"></h3>
@@ -85,17 +91,14 @@
         </div>
     </div>
 
-    <!-- Loading Indicator -->
     <div id="loading-indicator" class="fixed inset-0 bg-white z-50 flex justify-center items-center"><p class="text-lg font-medium">Loading...</p></div>
 
-    <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
         import { getAuth, onAuthStateChanged, GithubAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot, query, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Configuration ---
         const firebaseConfig = {
             apiKey: "AIzaSyDvwNsKNsVCHDgTStEvzrkTE8QWP831rPU",
             authDomain: "webapp-6ac16.firebaseapp.com",
@@ -107,30 +110,24 @@
         };
         const appId = 'webapp-6ac16';
 
-        // --- App State ---
-        let db, auth;
-        let userId = null;
-        let basePath = null;
-        let confirmAction = null;
-        let unsubscribeSubs = () => {};
-        let unsubscribeNewsletters = () => {};
-        let localSubscribers = [];
-        let localNewsletters = [];
+        let db, auth, userId = null, basePath = null, confirmAction = null;
+        let unsubscribeSubs = () => {}, unsubscribeNewsletters = () => {};
+        let localSubscribers = [], localNewsletters = [];
 
-        // --- DOM Elements ---
         const loadingIndicator = document.getElementById('loading-indicator');
         const loginContainer = document.getElementById('login-container');
         const appContainer = document.getElementById('app-container');
         const githubSigninBtn = document.getElementById('github-signin-btn');
         const signOutBtn = document.getElementById('sign-out-btn');
         const userInfoDisplay = document.getElementById('user-info');
-        
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
         const navButtons = document.querySelectorAll('.nav-button');
         const views = document.querySelectorAll('.view');
         const viewDashboard = document.getElementById('view-dashboard');
         const viewSubscribers = document.getElementById('view-subscribers');
         const viewNewsletters = document.getElementById('view-newsletters');
-        
         const modal = document.getElementById('modal');
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
@@ -138,7 +135,11 @@
         const modalCancel = document.getElementById('modal-cancel');
         const modalConfirm = document.getElementById('modal-confirm');
 
-        // --- Modal Logic ---
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.style.display = sidebar.classList.contains('-translate-x-full') ? 'none' : 'block';
+        }
+
         function showModal({ title, message, showConfirm = false, onConfirm = null }) {
             modalTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> ${title}`;
             modalBody.textContent = message;
@@ -152,7 +153,6 @@
             confirmAction = null;
         }
 
-        // --- Render Functions ---
         function renderAllViews() {
             renderDashboard();
             renderSubscribers();
@@ -239,7 +239,6 @@
                 </div>`;
         }
 
-        // --- Auth & Firestore Logic ---
         function handleSignIn() {
             const provider = new GithubAuthProvider();
             signInWithPopup(auth, provider).catch(error => {
@@ -257,32 +256,43 @@
             basePath = `artifacts/${appId}/users/${userId}`;
             
             const subsQuery = query(collection(db, `${basePath}/subscribers`));
-            unsubscribeSubs = onSnapshot(subsQuery, snapshot => {
-                localSubscribers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderAllViews();
-            });
+            unsubscribeSubs = onSnapshot(subsQuery, 
+                (snapshot) => {
+                    localSubscribers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderAllViews();
+                },
+                (error) => {
+                    console.error("Subscriber listener error:", error);
+                    showModal({title: "Database Error", message: "Could not load subscribers. Check console for details."});
+                }
+            );
 
             const newslettersQuery = query(collection(db, `${basePath}/newsletters`));
-            unsubscribeNewsletters = onSnapshot(newslettersQuery, snapshot => {
-                localNewsletters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                localNewsletters.sort((a, b) => (b.sentAt?.seconds || 0) - (a.sentAt?.seconds || 0));
-                renderAllViews();
-            });
+            unsubscribeNewsletters = onSnapshot(newslettersQuery, 
+                (snapshot) => {
+                    localNewsletters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    localNewsletters.sort((a, b) => (b.sentAt?.seconds || 0) - (a.sentAt?.seconds || 0));
+                    renderAllViews();
+                },
+                (error) => {
+                    console.error("Newsletter listener error:", error);
+                    showModal({title: "Database Error", message: "Could not load newsletters. Check console for details."});
+                }
+            );
         }
 
         function clearFirestoreListeners() {
             unsubscribeSubs();
             unsubscribeNewsletters();
-            userId = null;
-            basePath = null;
-            localSubscribers = [];
-            localNewsletters = [];
+            userId = null; basePath = null;
+            localSubscribers = []; localNewsletters = [];
         }
 
-        // --- Event Listeners ---
         function setupEventListeners() {
             githubSigninBtn.addEventListener('click', handleSignIn);
             signOutBtn.addEventListener('click', handleSignOut);
+            mobileMenuButton.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', toggleSidebar);
 
             navButtons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -291,10 +301,10 @@
                     document.getElementById(`view-${targetView}`).classList.add('active');
                     navButtons.forEach(btn => btn.classList.remove('bg-gray-700'));
                     button.classList.add('bg-gray-700');
+                    if (window.innerWidth < 768) toggleSidebar();
                 });
             });
             
-            // Event delegation for dynamically created content
             document.body.addEventListener('submit', async (e) => {
                 if (e.target.id === 'newsletter-form') {
                     e.preventDefault();
@@ -305,16 +315,14 @@
                         return;
                     }
                     const sendBtn = e.target.querySelector('button[type="submit"]');
-                    sendBtn.disabled = true;
-                    sendBtn.textContent = 'Sending...';
+                    sendBtn.disabled = true; sendBtn.textContent = 'Sending...';
                     try {
                         await addDoc(collection(db, `${basePath}/newsletters`), { subject, content, sentAt: Timestamp.now() });
                         e.target.reset();
                     } catch (error) {
                         showModal({ title: "Error", message: "Failed to send newsletter." });
                     } finally {
-                        sendBtn.disabled = false;
-                        sendBtn.textContent = 'Send Newsletter';
+                        sendBtn.disabled = false; sendBtn.textContent = 'Send Newsletter';
                     }
                 }
             });
@@ -350,7 +358,6 @@
             });
         }
 
-        // --- Initialization ---
         function main() {
             const app = initializeApp(firebaseConfig);
             getAnalytics(app);
@@ -376,7 +383,6 @@
         }
 
         main();
-
     </script>
 </body>
 </html>
