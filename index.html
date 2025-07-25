@@ -1,419 +1,289 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-100">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Newsletter & Subscriber Management App</title>
+    <title>Blog - fictitious</title>
+    
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .view { display: none; }
-        .view.active { display: block; }
-        #app-container, #login-container { display: none; }
-        #sidebar { transition: transform 0.3s ease-in-out; }
+        /* Custom styles for the page */
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: url('https://images.unsplash.com/photo-1504333638930-c8787321eee0?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            animation: pan-nebula 120s linear infinite alternate;
+        }
+
+        @keyframes pan-nebula {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .glass-card {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
-<body class="h-full">
+<body class="bg-gray-900 text-white">
 
-    <!-- Login Container -->
-    <div id="login-container" class="flex h-screen w-full items-center justify-center bg-gray-100 p-4">
-        <div class="bg-white p-8 rounded-lg shadow-md text-center w-full max-w-sm">
-            <h1 class="text-2xl font-bold mb-2">Newsletter HQ</h1>
-            <p class="text-gray-600 mb-6">Please sign in to continue.</p>
-            <button id="github-signin-btn" class="w-full flex justify-center items-center gap-3 bg-gray-800 text-white font-bold py-3 px-4 rounded-md hover:bg-gray-900 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                Sign in with GitHub
-            </button>
-        </div>
-    </div>
+    <!-- Nebula Background -->
+    <div class="background-container"></div>
 
-    <!-- App Container -->
-    <div id="app-container" class="relative min-h-screen md:flex" style="display: none;">
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" style="display: none;"></div>
-        <div id="sidebar" class="bg-gray-800 text-white w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30">
-            <div class="flex items-center space-x-3 p-2 mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                <span class="text-xl font-bold">Newsletter HQ</span>
-            </div>
-            <nav class="flex-grow">
-                <button data-view="dashboard" class="nav-button flex items-center w-full text-left p-3 rounded-lg transition-colors bg-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                    Dashboard
-                </button>
-                <button data-view="subscribers" class="nav-button flex items-center w-full text-left p-3 rounded-lg transition-colors hover:bg-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    Subscribers
-                </button>
-                <button data-view="newsletters" class="nav-button flex items-center w-full text-left p-3 rounded-lg transition-colors hover:bg-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                    Newsletters
-                </button>
+    <!-- Header Section -->
+    <header class="glass-card fixed top-0 left-0 right-0 z-30 shadow-lg">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3 text-white hover:text-cyan-300 transition-colors">
+                <img src="logo.png" alt="logo" class="h-10 w-10 rounded-full self-center">
+                <div>
+                    <span class="text-xl font-bold leading-tight">fictitious</span>
+                    <span class="block text-xs text-slate-300 leading-tight">a boy lost in the cosmos</span>
+                </div>
+            </a>
+            
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-slate-200 hover:text-cyan-300 transition-colors">Home</a>
+                <a href="about.html" class="text-slate-200 hover:text-cyan-300 transition-colors">About</a>
+                <a href="blog.html" class="text-slate-200 hover:text-cyan-300 transition-colors">Blog</a>
+                <a href="projects.html" class="text-slate-200 hover:text-cyan-300 transition-colors">Projects</a>
             </nav>
-            <div class="border-t border-gray-700 pt-4">
-                 <p id="user-info" class="text-sm text-gray-300 px-3 pb-2 font-semibold"></p>
-                 <p class="text-xs text-gray-400 px-3 pb-1">Your User ID:</p>
-                 <p id="user-id-display" class="text-xs text-gray-300 px-3 pb-2 break-all select-all"></p>
-                 <button id="sign-out-btn" class="w-full text-left mt-2 p-3 text-sm text-red-400 hover:bg-gray-700 rounded-lg">Sign Out</button>
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button id="menu-btn" class="text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
             </div>
         </div>
 
-        <div class="flex-1 flex flex-col">
-            <div class="md:hidden flex justify-between items-center bg-white p-4 shadow-md">
-                <button id="mobile-menu-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-                <span class="text-xl font-bold">Newsletter HQ</span>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="index.html" class="block py-2 px-4 text-sm text-slate-200 hover:bg-gray-700">Home</a>
+            <a href="about.html" class="block py-2 px-4 text-sm text-slate-200 hover:bg-gray-700">About</a>
+            <a href="blog.html" class="block py-2 px-4 text-sm text-slate-200 hover:bg-gray-700">Blog</a>
+            <a href="projects.html" class="block py-2 px-4 text-sm text-slate-200 hover:bg-gray-700">Projects</a>
+        </div>
+    </header>
+
+    <!-- Subscribe Button -->
+    <div class="fixed top-24 right-6 z-20">
+        <button id="subscribe-btn" class="glass-card text-white font-bold py-2 px-4 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/50 hover:text-cyan-300 transform hover:scale-105">
+            Subscribe
+        </button>
+    </div>
+
+    <!-- Subscription Modal -->
+    <div id="subscribe-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div id="modal-content" class="glass-card rounded-2xl shadow-2xl p-8 w-full max-w-md text-center relative">
+            <!-- Close Button -->
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <!-- Form Content -->
+            <div id="form-view">
+                <img src="logo.png" alt="logo" class="h-16 w-16 rounded-full mx-auto mb-4">
+                <p class="text-slate-300 mb-6">Get the latest posts and thoughts delivered to your inbox.</p>
+                <form id="subscribe-form">
+                    <input type="email" id="email-input" placeholder="Enter your email" class="w-full bg-gray-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-4" required>
+                    <button id="submit-btn" type="submit" class="w-full bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-cyan-500 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span id="submit-btn-text">Subscribe !!</span>
+                        <span id="submit-btn-loader" class="hidden">Subscribing...</span>
+                    </button>
+                </form>
             </div>
-            <main class="flex-1 p-4 sm:p-8 overflow-y-auto">
-                <div id="view-dashboard" class="view active"></div>
-                <div id="view-subscribers" class="view"></div>
-                <div id="view-newsletters" class="view"></div>
-            </main>
+
+            <!-- Success Message -->
+            <div id="success-view" class="hidden">
+                 <h2 class="text-2xl font-bold text-white mb-2">Thank You!</h2>
+                 <p class="text-slate-300">You've successfully subscribed. Welcome to the journey!</p>
+            </div>
+            
+            <!-- Error Message -->
+            <div id="error-view" class="hidden">
+                 <h2 class="text-2xl font-bold text-red-500 mb-2">Something Went Wrong</h2>
+                 <p class="text-slate-300">Could not subscribe at this time. Please try again later.</p>
+            </div>
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md m-4">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="modal-title" class="text-xl font-bold text-gray-800 flex items-center"></h3>
-                <button id="modal-close-x" class="text-gray-400 hover:text-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
+
+    <!-- Main Content Area -->
+    <main class="pt-32 pb-16">
+        <div class="container mx-auto px-4">
+            <!-- UPDATED: Added responsive padding to prevent overlap on mobile -->
+            <div class="text-center mb-16 pr-20 md:pr-0">
+                <h1 class="text-4xl md:text-5xl font-bold text-white">Cosmic Chronicles</h1>
+                <p class="text-slate-300 mt-2">A collection of thoughts on science, philosophy, and everything in between.</p>
             </div>
-            <div id="modal-body" class="text-gray-600 mb-6"></div>
-            <div class="flex justify-end space-x-4">
-                <button id="modal-cancel" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
-                <button id="modal-confirm" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirm</button>
+
+            <!-- Blog Post Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Your First Blog Post -->
+                <div class="glass-card rounded-xl overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
+                    <div class="p-6 flex-grow">
+                        <p class="text-sm text-cyan-400 mb-2">Philosophy • May 20, 2025</p>
+                        <h3 class="text-xl font-bold text-white mb-3">why do we think ?</h3>
+                        <p class="text-slate-300 text-sm">Few days back in a state of deep thought, a question came in my mind that, why am i even thinking so much? what is the need of thinking deeply about something?</p>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <a href="why-do-we-think.html" class="font-semibold text-cyan-400 hover:text-cyan-200 transition-colors">Read More &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- Add more blog post cards here when you write new posts -->
+
             </div>
         </div>
-    </div>
-
-    <div id="loading-indicator" class="fixed inset-0 bg-white z-50 flex justify-center items-center"><p class="text-lg font-medium">Loading...</p></div>
+    </main>
 
     <script type="module">
+        // --- Firebase SDK Imports ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
-        import { getAuth, onAuthStateChanged, GithubAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot, query, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDvwNsKNsVCHDgTStEvzrkTE8QWP831rPU",
-            authDomain: "webapp-6ac16.firebaseapp.com",
-            projectId: "webapp-6ac16",
-            storageBucket: "webapp-6ac16.appspot.com",
-            messagingSenderId: "357496327597",
-            appId: "1:357496327597:web:e95110ee68f4f9b1a7a524",
-            measurementId: "G-J691GR2M4G"
-        };
-        const appId = 'webapp-6ac16';
+        // --- Firebase Configuration ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        let db, auth, userId = null, basePath = null, confirmAction = null;
-        let unsubscribeSubs = () => {}, unsubscribeNewsletters = () => {};
-        let localSubscribers = [], localNewsletters = [];
+        let db;
+        let auth;
 
-        const loadingIndicator = document.getElementById('loading-indicator');
-        const loginContainer = document.getElementById('login-container');
-        const appContainer = document.getElementById('app-container');
-        const githubSigninBtn = document.getElementById('github-signin-btn');
-        const signOutBtn = document.getElementById('sign-out-btn');
-        const userInfoDisplay = document.getElementById('user-info');
-        const userIdDisplay = document.getElementById('user-id-display');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const navButtons = document.querySelectorAll('.nav-button');
-        const views = document.querySelectorAll('.view');
-        const viewDashboard = document.getElementById('view-dashboard');
-        const viewSubscribers = document.getElementById('view-subscribers');
-        const viewNewsletters = document.getElementById('view-newsletters');
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalBody = document.getElementById('modal-body');
-        const modalCloseX = document.getElementById('modal-close-x');
-        const modalCancel = document.getElementById('modal-cancel');
-        const modalConfirm = document.getElementById('modal-confirm');
-
-        function toggleSidebar() {
-            sidebar.classList.toggle('-translate-x-full');
-            sidebarOverlay.style.display = sidebar.classList.contains('-translate-x-full') ? 'none' : 'block';
-        }
-
-        function showModal({ title, message, showConfirm = false, onConfirm = null }) {
-            modalTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500 mr-2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> ${title}`;
-            modalBody.textContent = message;
-            modalConfirm.style.display = showConfirm ? 'block' : 'none';
-            confirmAction = onConfirm;
-            modal.classList.remove('hidden');
-        }
-
-        function hideModal() {
-            modal.classList.add('hidden');
-            confirmAction = null;
-        }
-
-        function renderAllViews() {
-            renderDashboard();
-            renderSubscribers();
-            renderNewsletters();
-        }
-
-        function renderDashboard() {
-            viewDashboard.innerHTML = `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 flex items-center space-x-4">
-                        <div class="p-3 rounded-full bg-blue-100"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Total Subscribers</p>
-                            <p class="text-3xl font-bold text-gray-800">${localSubscribers.length}</p>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 flex items-center space-x-4">
-                        <div class="p-3 rounded-full bg-green-100"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Newsletters Sent</p>
-                            <p class="text-3xl font-bold text-gray-800">${localNewsletters.length}</p>
-                        </div>
-                    </div>
-                </div>`;
-        }
-
-        function renderSubscribers() {
-            const tableRows = localSubscribers.map(sub => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4 text-gray-800">${sub.email}</td>
-                    <td class="p-4 text-gray-500">${sub.subscribedAt ? new Date(sub.subscribedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
-                    <td class="p-4 text-right">
-                        <button data-id="${sub.id}" data-email="${sub.email}" class="delete-subscriber-btn text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                        </button>
-                    </td>
-                </tr>`).join('');
-
-            viewSubscribers.innerHTML = `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Subscribers</h1>
-                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                    <div class="overflow-x-auto">
-                        ${localSubscribers.length === 0 ? '<p class="text-center text-gray-500 py-8">You don\'t have any subscribers yet.</p>' : `
-                        <table class="w-full text-left">
-                            <thead><tr class="border-b"><th class="p-4 text-sm font-semibold text-gray-600">Email Address</th><th class="p-4 text-sm font-semibold text-gray-600">Subscription Date</th><th class="p-4 text-sm font-semibold text-gray-600 text-right">Actions</th></tr></thead>
-                            <tbody>${tableRows}</tbody>
-                        </table>`}
-                    </div>
-                </div>`;
-        }
-
-        function renderNewsletters() {
-            const newsletterList = localNewsletters.map(nl => `
-                <div class="border-b pb-4 mb-4">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-semibold text-gray-800">${nl.subject}</h3>
-                            <p class="text-sm text-gray-500 mt-1">${nl.content}</p>
-                        </div>
-                        <button data-id="${nl.id}" data-subject="${nl.subject}" class="delete-newsletter-btn text-gray-400 hover:text-red-600 p-1 ml-2 flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-2">Sent on: ${nl.sentAt ? new Date(nl.sentAt.seconds * 1000).toLocaleString() : 'N/A'}</p>
-                </div>`).join('');
-
-            viewNewsletters.innerHTML = `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Newsletters</h1>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Compose New Newsletter</h2>
-                        <form id="newsletter-form" class="space-y-4">
-                            <div>
-                                <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                                <input id="subject" type="text" placeholder="Your newsletter subject" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                            </div>
-                            <div>
-                                <label for="content" class="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                                <textarea id="content" placeholder="Write your newsletter here..." rows="10" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required></textarea>
-                            </div>
-                            <button type="submit" id="send-newsletter-btn" class="w-full flex justify-center items-center bg-blue-600 text-white font-bold py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-blue-300 transition-colors">Send Newsletter</button>
-                        </form>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Sent Newsletters</h2>
-                        <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                            ${localNewsletters.length === 0 ? '<p class="text-center text-gray-500 pt-16">You haven\'t sent any newsletters yet.</p>' : newsletterList}
-                        </div>
-                    </div>
-                </div>`;
-        }
-
-        function handleSignIn() {
-            const provider = new GithubAuthProvider();
-            signInWithPopup(auth, provider).catch(error => {
-                console.error("GitHub sign-in error:", error);
-                showModal({ title: `Sign-in failed`, message: error.message });
-            });
-        }
-
-        function handleSignOut() {
-            signOut(auth);
-        }
-
-        function setupFirestoreListeners(uid) {
-            userId = uid;
-            basePath = `artifacts/${appId}/users/${userId}`;
-            
-            const subsQuery = query(collection(db, `${basePath}/subscribers`));
-            unsubscribeSubs = onSnapshot(subsQuery, 
-                (snapshot) => {
-                    localSubscribers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderAllViews();
-                },
-                (error) => {
-                    console.error("Subscriber listener error:", error);
-                    showModal({title: "Database Error", message: "Could not load subscribers. Check console for details."});
-                }
-            );
-
-            const newslettersQuery = query(collection(db, `${basePath}/newsletters`));
-            unsubscribeNewsletters = onSnapshot(newslettersQuery, 
-                (snapshot) => {
-                    localNewsletters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    localNewsletters.sort((a, b) => (b.sentAt?.seconds || 0) - (a.sentAt?.seconds || 0));
-                    renderAllViews();
-                },
-                (error) => {
-                    console.error("Newsletter listener error:", error);
-                    showModal({title: "Database Error", message: "Could not load newsletters. Check console for details."});
-                }
-            );
-        }
-
-        function clearFirestoreListeners() {
-            unsubscribeSubs();
-            unsubscribeNewsletters();
-            userId = null; basePath = null;
-            localSubscribers = []; localNewsletters = [];
-        }
-
-        function setupEventListeners() {
-            githubSigninBtn.addEventListener('click', handleSignIn);
-            signOutBtn.addEventListener('click', handleSignOut);
-            mobileMenuButton.addEventListener('click', toggleSidebar);
-            sidebarOverlay.addEventListener('click', toggleSidebar);
-
-            navButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const targetView = button.dataset.view;
-                    views.forEach(view => view.classList.remove('active'));
-                    document.getElementById(`view-${targetView}`).classList.add('active');
-                    navButtons.forEach(btn => btn.classList.remove('bg-gray-700'));
-                    button.classList.add('bg-gray-700');
-                    if (window.innerWidth < 768) toggleSidebar();
-                });
-            });
-            
-            document.body.addEventListener('submit', async (e) => {
-                if (e.target.id === 'newsletter-form') {
-                    e.preventDefault();
-                    const subject = e.target.elements.subject.value.trim();
-                    const content = e.target.elements.content.value.trim();
-                    if (!subject || !content) {
-                        showModal({ title: "Missing Information", message: "Please fill out both fields." });
-                        return;
-                    }
-                    const sendBtn = e.target.querySelector('button[type="submit"]');
-                    sendBtn.disabled = true; sendBtn.textContent = 'Sending...';
-                    try {
-                        await addDoc(collection(db, `${basePath}/newsletters`), { subject, content, sentAt: Timestamp.now() });
-                        e.target.reset();
-                    } catch (error) {
-                        showModal({ title: "Error", message: "Failed to send newsletter." });
-                    } finally {
-                        sendBtn.disabled = false; sendBtn.textContent = 'Send Newsletter';
-                    }
-                }
-            });
-
-            document.body.addEventListener('click', (e) => {
-                const deleteSubBtn = e.target.closest('.delete-subscriber-btn');
-                const deleteNlBtn = e.target.closest('.delete-newsletter-btn');
-
-                if (deleteSubBtn) {
-                    const subId = deleteSubBtn.dataset.id;
-                    const subEmail = deleteSubBtn.dataset.email;
-                    showModal({
-                        title: "Confirm Deletion",
-                        message: `Delete subscriber "${subEmail}"? This cannot be undone.`,
-                        showConfirm: true,
-                        onConfirm: async () => {
-                            try {
-                                await deleteDoc(doc(db, `${basePath}/subscribers`, subId));
-                                hideModal();
-                            } catch (error) {
-                                hideModal();
-                                showModal({ title: "Error", message: "Failed to delete subscriber." });
-                            }
-                        }
-                    });
-                } else if (deleteNlBtn) {
-                    const nlId = deleteNlBtn.dataset.id;
-                    const nlSubject = deleteNlBtn.dataset.subject;
-                    showModal({
-                        title: "Confirm Deletion",
-                        message: `Delete newsletter "${nlSubject}"? This cannot be undone.`,
-                        showConfirm: true,
-                        onConfirm: async () => {
-                            try {
-                                await deleteDoc(doc(db, `${basePath}/newsletters`, nlId));
-                                hideModal();
-                            } catch (error) {
-                                hideModal();
-                                showModal({ title: "Error", message: "Failed to delete newsletter." });
-                            }
-                        }
-                    });
-                }
-            });
-
-            modalCloseX.addEventListener('click', hideModal);
-            modalCancel.addEventListener('click', hideModal);
-            modalConfirm.addEventListener('click', () => {
-                if (typeof confirmAction === 'function') {
-                    confirmAction();
-                }
-            });
-        }
-
-        function main() {
-            const app = initializeApp(firebaseConfig);
-            getAnalytics(app);
-            auth = getAuth(app);
-            db = getFirestore(app);
-
-            setupEventListeners();
-
-            onAuthStateChanged(auth, (user) => {
-                loadingIndicator.style.display = 'none';
-                if (user) {
-                    loginContainer.style.display = 'none';
-                    appContainer.style.display = 'flex';
-                    userInfoDisplay.textContent = user.displayName || user.email;
-                    userIdDisplay.textContent = user.uid;
-                    setupFirestoreListeners(user.uid);
+        // --- Initialize Firebase and Firestore ---
+        async function initializeFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
                 } else {
-                    appContainer.style.display = 'none';
-                    loginContainer.style.display = 'flex';
-                    userInfoDisplay.textContent = '';
-                    userIdDisplay.textContent = '';
-                    clearFirestoreListeners();
+                    await signInAnonymously(auth);
                 }
-            });
+                console.log("Firebase initialized and user signed in.");
+                return true;
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                return false;
+            }
         }
 
-        main();
+        // --- Modal Control ---
+        const subscribeBtn = document.getElementById('subscribe-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const subscribeModal = document.getElementById('subscribe-modal');
+        const subscribeForm = document.getElementById('subscribe-form');
+        const emailInput = document.getElementById('email-input');
+        const formView = document.getElementById('form-view');
+        const successView = document.getElementById('success-view');
+        const errorView = document.getElementById('error-view');
+        const submitBtn = document.getElementById('submit-btn');
+        const submitBtnText = document.getElementById('submit-btn-text');
+        const submitBtnLoader = document.getElementById('submit-btn-loader');
+
+        subscribeBtn.addEventListener('click', () => {
+            subscribeModal.classList.remove('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            subscribeModal.classList.add('hidden');
+            setTimeout(() => {
+                formView.classList.remove('hidden');
+                successView.classList.add('hidden');
+                errorView.classList.add('hidden');
+            }, 300);
+        });
+
+        // --- Form Submission Logic ---
+        subscribeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtnText.classList.add('hidden');
+            submitBtnLoader.classList.remove('hidden');
+
+            if (!db || !auth) {
+                console.error("Firestore or Auth is not initialized.");
+                formView.classList.add('hidden');
+                errorView.classList.remove('hidden');
+                return;
+            }
+            
+            const email = emailInput.value;
+            
+            try {
+                await addDoc(collection(db, `/artifacts/${appId}/public/data/subscribers`), {
+                    email: email,
+                    subscribedAt: serverTimestamp()
+                });
+                console.log("Subscriber added successfully.");
+                formView.classList.add('hidden');
+                successView.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Error adding document, possibly due to expired token:", error);
+                
+                console.log("Attempting to re-authenticate and retry...");
+                try {
+                    await signInAnonymously(auth);
+                    console.log("Re-authenticated successfully.");
+                    await addDoc(collection(db, `/artifacts/${appId}/public/data/subscribers`), {
+                        email: email,
+                        subscribedAt: serverTimestamp()
+                    });
+                    console.log("Subscriber added on retry.");
+                    formView.classList.add('hidden');
+                    successView.classList.remove('hidden');
+                } catch (retryError) {
+                    console.error("Error on retry:", retryError);
+                    formView.classList.add('hidden');
+                    errorView.classList.remove('hidden');
+                }
+            } finally {
+                submitBtn.disabled = false;
+                submitBtnText.classList.remove('hidden');
+                submitBtnLoader.classList.add('hidden');
+            }
+        });
+
+        // --- Mobile Menu Toggle Script ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // --- Initialize the App ---
+        initializeFirebase();
+
     </script>
+
 </body>
 </html>
