@@ -18,7 +18,6 @@
 </head>
 <body class="h-full">
 
-    <!-- Login Container -->
     <div id="login-container" class="flex h-screen w-full items-center justify-center bg-gray-100 p-4">
         <div class="bg-white p-8 rounded-lg shadow-md text-center w-full max-w-sm">
             <h1 class="text-2xl font-bold mb-2">Newsletter HQ</h1>
@@ -30,7 +29,6 @@
         </div>
     </div>
 
-    <!-- App Container -->
     <div id="app-container" class="relative min-h-screen md:flex" style="display: none;">
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" style="display: none;"></div>
         <div id="sidebar" class="bg-gray-800 text-white w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30">
@@ -196,7 +194,13 @@
                 </tr>`).join('');
 
             viewSubscribers.innerHTML = `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Subscribers</h1>
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800">Subscribers</h1>
+                    <button id="download-csv-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center gap-2" ${localSubscribers.length === 0 ? 'disabled' : ''}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Download CSV
+                    </button>
+                </div>
                 <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <div class="overflow-x-auto">
                         ${localSubscribers.length === 0 ? '<p class="text-center text-gray-500 py-8">You don\'t have any subscribers yet.</p>' : `
@@ -214,7 +218,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <h3 class="font-semibold text-gray-800">${nl.subject}</h3>
-                            <p class="text-sm text-gray-500 mt-1">${nl.content}</p>
+                            <p class="text-sm text-gray-500 mt-1 whitespace-pre-wrap">${nl.content}</p>
                         </div>
                         <button data-id="${nl.id}" data-subject="${nl.subject}" class="delete-newsletter-btn text-gray-400 hover:text-red-600 p-1 ml-2 flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -247,6 +251,31 @@
                         </div>
                     </div>
                 </div>`;
+        }
+        
+        function downloadSubscribersCSV() {
+            if (localSubscribers.length === 0) {
+                showModal({ title: "No Data", message: "There are no subscribers to download." });
+                return;
+            }
+            const headers = "email,subscribedAt";
+            const csvRows = localSubscribers.map(sub => {
+                const email = `"${sub.email.replace(/"/g, '""')}"`; // Escape double quotes
+                const date = sub.subscribedAt ? new Date(sub.subscribedAt.seconds * 1000).toISOString() : 'N/A';
+                return [email, date].join(',');
+            });
+
+            const csvContent = [headers, ...csvRows].join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "subscribers.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         function handleSignIn() {
@@ -340,6 +369,7 @@
             document.body.addEventListener('click', (e) => {
                 const deleteSubBtn = e.target.closest('.delete-subscriber-btn');
                 const deleteNlBtn = e.target.closest('.delete-newsletter-btn');
+                const downloadCsvBtn = e.target.closest('#download-csv-btn');
 
                 if (deleteSubBtn) {
                     const subId = deleteSubBtn.dataset.id;
@@ -375,6 +405,8 @@
                             }
                         }
                     });
+                } else if (downloadCsvBtn) {
+                    downloadSubscribersCSV();
                 }
             });
 
@@ -417,3 +449,4 @@
     </script>
 </body>
 </html>
+also add download subscribers list as CSV f
